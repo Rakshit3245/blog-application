@@ -1,0 +1,132 @@
+{% extends "blog/base.html" %}
+{% block content %}
+  <article class="media content-section">
+    <img class="rounded-circle article-img" alt="profile-pic" src="{{ object.author.profile.image.url }}">
+    <div class="media-body">
+      <div class="article-metadata">
+        <a class="mr-2" href="{% url 'user-posts' object.author.username %}">{{ object.author }}</a>
+        <small class="text-muted">{{ object.date_posted|date:"F d, Y" }}</small>
+        {% if object.author == user %}
+          <div>
+            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' object.id %}">Update</a>
+              <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' object.id %}">Delete</a>
+              <a class="btn btn-info btn-sm mt-1 mb-1" href="{% url 'image-display' object.id %}">Update Image</a>
+          </div>
+        {% endif %}
+      </div>
+      <h2 class="article-title">{{ object.title }}</h2>
+        <!-- Carousel -->
+                <div id="carouselExampleIndicators{{ post.id }}" class="carousel slide " data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        {% for image in post.images.all %}
+                            <li data-target="#carouselExampleIndicators{{ post.id }}" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"></li>
+                        {% endfor %}
+                    </ol>
+                    <div class="carousel-inner">
+                        {% for image in post.images.all %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img class="d-block w-100" src="{{ image.post_images.url }}" alt="Image {{ forloop.counter }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <a class="carousel-control-prev" href="#carouselExampleIndicators{{ post.id }}" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carouselExampleIndicators{{ post.id }}" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+      <p class="article-content">{{ object.content }}</p>
+    </div>
+  </article>
+<!--    like and comment post -->
+    <div class="container">
+      <div class="content">
+          <!-- Like Button (Form) -->
+          <form action="{% url 'like-post' post.id %}" method="POST" style="display:inline;">
+              {% csrf_token %}
+              {% if user in post.likes.all %}
+              <button type="submit" style="background: none;border: none;text-decoration: none">
+                  <i class="fa-solid fa-heart" style="color: red"></i>
+                  {{ post.num_of_likes }}  Like
+              </button>
+              {% else %}
+              <button type="submit" style="background: none; border: none;text-decoration: none">
+                  <i class="fa-regular fa-heart" ></i>
+                  {{ post.num_of_likes }}  Like
+              </button>
+              {% endif %}
+          </form>
+      </div>
+      <div class="content" style="color: #5F788A">
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+            Comments
+        </button>
+        <div class="collapse" id="collapseExample">
+          <div class="card card-body">
+            <form method="post" action="{% url 'post-comment' post.id %}">
+                {% csrf_token %}
+                <input type="text" aria-label="comments" id="comments" name="comments" placeholder="Enter Your Comment">
+                <button type="submit" class="button">Send</button>
+            </form>
+          </div>
+        </div>
+      </div>
+        <div class="comments-section">
+            {% for comment in post.comments.all %}
+                <div class="comment">
+                    <div class="comment-left">
+                        {% if not comment.parent_comment %}
+                            <p><strong>{{ comment.user.username }}:</strong> {{ comment.comments }}  <sup>{{ comment.created_at | date:"D f" }}</sup></p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Right aligned replies -->
+                    <div class="replies-right">
+                        {% for reply in comment.replies.all %}
+                            <div class="reply">
+                                <p><strong>{{ reply.user.username }}:</strong> {{ reply.comments }} <sup>{{ reply.created_at | date:"D f" }}</sup></p>
+                            </div>
+                        {% endfor %}
+
+                        <!-- Only show the reply button if there are no replies yet -->
+                        {% if comment.replies.all.count == 0 %}
+                            <a class="btn btn-primary" data-toggle="collapse" href="#replayBox{{ comment.id }}" role="button" aria-expanded="false" aria-controls="replayBox{{ comment.id }}">
+                                Reply
+                            </a>
+                        {% endif %}
+
+                        <!-- Reply Form -->
+                        <div class="collapse" id="replayBox{{ comment.id }}">
+                            <div class="card card-body">
+                                <form method="POST" action="{% url 'comment-replay' comment.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" value="{{ comment.post.id }}">
+                                    <input type="text" aria-label="replay" id="replay" name="replay" placeholder="Enter Your Reply" required>
+                                    <button type="submit" class="btn btn-primary">Send</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <a class="btn btn-primary" data-toggle="collapse" href="#replayBox" role="button" aria-expanded="false" aria-controls="replayBox{{ comment.id }}">
+            All Like Users
+        </a>
+        <div class="collapse" id="replayBox">
+            <div class="card card-body">
+                {% for user in post.likes.all %}
+                <ul>
+                    <li>
+                        {{ user.username }}
+                    </li>
+                </ul>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
