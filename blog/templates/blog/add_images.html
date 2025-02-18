@@ -1,0 +1,12 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <h1>Add Images</h1>
+    <form method="post"  enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="image">Upload Image {{ post.title }}</label>
+            <input type="file" name="post_images" id="image" class="form-control" multiple>
+        </div>
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+{% endblock %}

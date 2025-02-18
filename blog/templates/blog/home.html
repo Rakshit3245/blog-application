@@ -1,0 +1,140 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    {% for post in posts %}
+        <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
+                    <small class="text-muted">{{ post.date_posted | date:"F d, Y" }}</small>
+                </div>
+                <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
+
+                {% if post.images.all %}
+                    <!-- Carousel -->
+                    <div id="carouselExampleIndicators{{ post.id }}" class="carousel slide" data-ride="carousel">
+                        <ol class="carousel-indicators">
+                            {% for image in post.images.all %}
+                                <li data-target="#carouselExampleIndicators{{ post.id }}" data-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"></li>
+                            {% endfor %}
+                        </ol>
+                        <div class="carousel-inner">
+                            {% for image in post.images.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    <img class="d-block w-100" src="{{ image.post_images.url }}" alt="Image {{ forloop.counter }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Title Centered Over All Images -->
+                        <div class="carousel-caption d-none d-md-block title-overlay">
+                            <a href="{% url 'post-detail' post.id %}" style="text-decoration: none; font-size: 2em; color: white; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);">
+                                {{ post.title }}
+                            </a>
+                        </div>
+
+                        <a class="carousel-control-prev" href="#carouselExampleIndicators{{ post.id }}" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#carouselExampleIndicators{{ post.id }}" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <div class="content">
+                    <!-- Like Button (Form) -->
+                    <form action="{% url 'like-post' post.id %}" method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        {% if user in post.likes.all %}
+                            <button type="submit" style="background: none;border: none;text-decoration: none">
+                                <i class="fa-solid fa-heart" style="color: red"></i>
+                                {{ post.num_of_likes }}  Like
+                            </button>
+                        {% else %}
+                            <button type="submit" style="background: none; border: none;text-decoration: none">
+                                <i class="fa-regular fa-heart" ></i>
+                                {{ post.num_of_likes }}  Like
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <div class="content" style="color: #5F788A">
+                    <!-- Comments Button and Collapse Form -->
+                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseComments{{ post.id }}" aria-expanded="false" aria-controls="collapseComments{{ post.id }}">
+                        Comments
+                    </button>
+
+                    <div class="collapse" id="collapseComments{{ post.id }}">
+                        <div class="card card-body">
+                            <form method="post" action="{% url 'post-comment' post.id %}">
+                                {% csrf_token %}
+                                <input type="text" aria-label="comments" id="comments" name="comments" placeholder="Enter Your Comment" required>
+                                <button type="submit" class="btn btn-primary">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display comments -->
+                {% for comment in post.comments.all|slice:":2" %}
+                    <div class="comment">
+                        <div class="comment-left">
+                            {% if not comment.parent_comment %}
+                                <p><strong>{{ comment.user.username }}:</strong> {{ comment.comments }}  <sup>{{ comment.created_at | date:"D f" }}</sup></p>
+                            {% endif %}
+                        </div>
+
+                        <!-- replies -->
+                        <div class="replies-right">
+                            {% for reply in comment.replies.all %}
+                                <div class="reply">
+                                    <p><strong>{{ reply.user.username }}:</strong> {{ reply.comments }} <sup>{{ reply.created_at | date:"D f" }}</sup></p>
+                                </div>
+                            {% endfor %}
+
+                            <!-- Only show the reply button if there are no replies yet -->
+                            {% if comment.replies.all.count == 0 %}
+                                <a class="btn btn-primary m-2" data-toggle="collapse" href="#replayBox{{ comment.id }}" role="button" aria-expanded="false" aria-controls="replayBox{{ comment.id }}">
+                                    Reply
+                                </a>
+                            {% endif %}
+
+                            <!-- Reply Form (visible only when clicked) -->
+                            <div class="collapse" id="replayBox{{ comment.id }}">
+                                <div class="card card-body">
+                                    <form method="POST" action="{% url 'comment-replay' comment.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="post_id" value="{{ comment.post.id }}">
+                                        <input type="text" aria-label="replay" id="replay" name="replay" placeholder="Enter Your Reply" required>
+                                        <button type="submit" class="btn btn-primary">Send</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+    {% endfor %}
+    {% if is_paginated %}
+        {% if page_obj.has_previous %}
+            <a class="btn btn-outline-info mb-4 " href="?page=1">First</a>
+            <a class="btn btn-outline-info mb-4 " href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a class="btn btn-outline-info mb-4 " href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a class="btn btn-outline-info mb-4 " href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        {% endif %}
+    {% endif %}
+{% endblock content %}

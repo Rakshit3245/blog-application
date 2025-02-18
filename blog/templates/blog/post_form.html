@@ -1,0 +1,26 @@
+{% extends "blog/base.html" %}
+{%load crispy_forms_tags %}
+{% block content %}
+<div class="content-section">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Blog Post</legend>
+            {{ form | crispy }}
+        </fieldset>
+        <fieldset>
+            <legend>Upload Images</legend>
+            <div class="form-group">
+                <label for="images">Select images:</label>
+                <input type="file" name="post_images" id="images" multiple class="form-control">
+            </div>
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-outline-info" type="submit">Post</button>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+
+
