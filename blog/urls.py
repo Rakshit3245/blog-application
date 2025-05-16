@@ -32,11 +32,6 @@ urlpatterns = [
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# function urls
-
-# path('', views.home,name="blog-home"),
-# path('post/<int:pk>/like/', views.like_post, name='like-post'),
-# path('about', views.about, name="blog-about"),
 
 
 
