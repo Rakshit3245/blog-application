@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import HttpResponse
 from django.contrib.auth.models import User
 from .models import Post, Comment, PostImage
 from django.views.generic import (
@@ -13,7 +12,6 @@ from django.views.generic import (
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django import forms
 from .forms import PostImageForm
 from django.urls import reverse_lazy,reverse
 from django.contrib import messages
@@ -166,7 +164,7 @@ def search_blog(request):
     if query:
         posts = Post.objects.filter(
             title__icontains=query) | Post.objects.filter(
-            content__icontains=query)  # Searching in both the title and content
+            content__icontains=query)
         return render(request, 'blog/blog_search.html', {'posts': posts, 'q': query})
     else:
         return render(request, 'blog/home.html')
@@ -195,29 +193,3 @@ class AboutView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'About'
         return context
-
-
-# @login_required
-# def home(request):
-#     context = {
-#         'posts': Post.objects.all()
-#     }
-#     return render(request, 'blog/home.html', context)
-
-# @login_required
-# def like_post(request, pk):
-#     post = get_object_or_404(Post, id=pk)
-#     if request.user in post.likes.all():
-#         post.likes.remove(request.user)
-#     else:
-#         post.likes.add(request.user)
-#     return redirect('blog-list')
-
-# @login_required
-# def about(request):
-#     return render(request, "blog/about.html", {'title': 'About'})
-
-# def post_images(request, post_id):
-#     post = get_object_or_404(Post, id=post_id)
-#     images = PostImage.objects.filter(post=post)
-#     return render(request, 'blog/post_images.html', {'post': post, 'images': images})
