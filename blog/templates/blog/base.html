@@ -28,8 +28,8 @@
             <a class="nav-item nav-link" href="{% url 'blog-about' %}">About</a>
             {% if user.is_authenticated %}
             <!-- Search Form placed right after Home and About -->
-            <form class="form-inline my-2 my-lg-0" method="GET" action="{% url 'search_blog' %}">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search by title " name="search" aria-label="Search" value="{{ request.GET.q }}" >
+            <form class="form-inline my-2 my-lg-0 m-4" method="GET" action="{% url 'search_blog' %}">
+                <input class="form-control mr-sm-2 " type="search" placeholder="Search by title " name="search" aria-label="Search" value="{{ request.GET.q }}" >
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
             </form>
               {% endif %}
@@ -38,7 +38,7 @@
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-                <p class="mt-2">Welcome {{ user.username }}</p>
+                <p class="mt-2">Welcome <b>{{ user.username }}</b></p>
                 <div class="dropdown" style="color: #5F788A">
                       <!-- The button that activates the dropdown -->
                       <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: rgb(95,31,120); border: none; background-color: transparent;">
