@@ -27,9 +27,23 @@
                   <i class="fa-regular fa-heart"></i>
                   {{ post.num_of_likes }} Like
                 </button>
+
               {% endif %}
             </form>
           </div>
+            <a class="btn btn-primary" data-toggle="collapse" href="#likeUsersCollapse{{ post.id }}" role="button" aria-expanded="false" aria-controls="likeUsersCollapse{{ post.id }}" style="padding: 2px;">
+                All Like Users
+            </a>
+
+            <div class="collapse" id="likeUsersCollapse{{ post.id }}">
+                <div class="card card-body">
+                    <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
+                        {% for user in post.likes.all %}
+                            <li style="text-align: left; list-style-position: inside;">{{ user.username }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
             <div class="content" style="color: #5F788A">
               <button role="button" class="btn dropdown" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: rgb(95,31,120); border: none; background-color: transparent;">
                   Comment
@@ -47,51 +61,45 @@
                   </form>
               </div>
             </div>
-            <div class="comments-section">
+            <div class="comments-section mt-3">
                 {% for comment in post.comments.all %}
-                    <div class="comment">
-                        <div class="comment-left">
-                            <p><strong>{{ comment.user.username }}:</strong> {{ comment.comments }}  <sup>{{ comment.created_at | date:"D f" }}</sup></p>
-                        </div>
-                        <div class="replies-right">
+                    {% if not comment.parent_comment %}
+                    <div class="comment mb-3" style="border-left: 2px solid #ccc; padding-left: 15px;">
+                        <!-- Top-level Comment -->
+                        <p><strong>{{ comment.user.username }}:</strong> {{ comment.comments }}
+                            <sup>{{ comment.created_at|date:"D, M d Y H:i" }}</sup>
+                        </p>
+
+                        <!-- Replies -->
+                        <div class="replies ml-4 mt-2">
                             {% for reply in comment.replies.all %}
-                                <div class="reply">
-                                    <p><strong>{{ reply.user.username }}:</strong> {{ reply.reply }} <sup>{{ reply.created_at | date:"D f" }}</sup></p>
+                                <div class="reply mb-2" style="padding-left: 10px; border-left: 1px dashed #aaa;">
+                                    <p><strong>{{ reply.user.username }}:</strong> {{ reply.comments }}
+                                        <sup>{{ reply.created_at|date:"D, M d Y H:i" }}</sup>
+                                    </p>
                                 </div>
                             {% endfor %}
-                            <!-- Reply Form -->
-                            {% if comment.replies.all.count == 0 %}
-                                <!-- Reply Form -->
-                                <a class="btn btn-primary" data-toggle="collapse" href="#replayBox{{ comment.id }}" role="button" aria-expanded="false" aria-controls="replayBox{{ comment.id }}">
-                                    Reply
-                                </a>
-                            {% endif %}
-                            <div class="collapse" id="replayBox{{ comment.id }}">
-                                <div class="card card-body">
-                                    <form method="post" action="{% url 'comment-replay' comment.id %}">
-                                        {% csrf_token %}
-                                        <input type="text" aria-label="replay" id="replay" name="replay" placeholder="Enter Your Reply" required>
-                                        <button type="submit" class="button">Send</button>
-                                    </form>
-                                </div>
+                        </div>
+
+                        <!-- Reply Button -->
+                        <a class="btn btn-sm btn-outline-primary mt-2" data-toggle="collapse" href="#replayBox{{ comment.id }}" role="button" aria-expanded="false" aria-controls="replayBox{{ comment.id }}">
+                            Reply
+                        </a>
+
+                        <!-- Reply Form -->
+                        <div class="collapse mt-2" id="replayBox{{ comment.id }}">
+                            <div class="card card-body">
+                                <form method="POST" action="{% url 'comment-replay' comment.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                                    <input type="text" class="form-control" name="replay" placeholder="Enter your reply" required>
+                                    <button type="submit" class="btn btn-primary btn-sm mt-2">Send</button>
+                                </form>
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                 {% endfor %}
-            </div>
-            <a class="btn btn-primary" data-toggle="collapse" href="#likeUsersCollapse{{ post.id }}" role="button" aria-expanded="false" aria-controls="likeUsersCollapse{{ post.id }}" style="padding: 2px">
-                All Like Users
-            </a>
-            <div class="collapse" id="likeUsersCollapse{{ post.id }}">
-                <div class="card card-body">
-                    {% for user in post.likes.all %}
-                    <ul>
-                        <li>
-                            {{ user.username }}
-                        </li>
-                    </ul>
-                    {% endfor %}
-                </div>
             </div>
         </div>
     {% endfor %}

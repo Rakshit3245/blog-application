@@ -30,7 +30,7 @@ urlpatterns = [
     path('delete-image/<int:image_id>/', views.delete_image, name='delete_image'),
     path('search/', views.search_blog, name='search_blog'),
 
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 
